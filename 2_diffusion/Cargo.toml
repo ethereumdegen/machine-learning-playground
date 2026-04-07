@@ -1,0 +1,10 @@
+[package]
+name = "diffusion"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+burn = { version = "0.16", features = ["train", "ndarray", "wgpu", "vision"] }
+image = "0.25"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
