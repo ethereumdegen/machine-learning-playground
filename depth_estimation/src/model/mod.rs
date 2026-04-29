@@ -9,7 +9,7 @@ use blocks::{
 };
 
 /// UNet for monocular depth estimation.
-/// Channel plan: 3 -> 32 -> 64 -> 128 -> 256 (down), 256 -> 128 -> 64 -> 32 -> 1 (up)
+/// Channel plan: 3 -> 16 -> 32 -> 64 -> 128 (down), 128 -> 64 -> 32 -> 16 -> 1 (up)
 #[derive(Module, Debug)]
 pub struct DepthUNet<B: Backend> {
     conv_in: Conv2d<B>,
@@ -34,22 +34,22 @@ pub struct DepthUNetConfig {}
 impl DepthUNetConfig {
     pub fn init<B: Backend>(&self, device: &B::Device) -> DepthUNet<B> {
         DepthUNet {
-            conv_in: Conv2dConfig::new([3, 32], [3, 3])
+            conv_in: Conv2dConfig::new([3, 16], [3, 3])
                 .with_padding(burn::nn::PaddingConfig2d::Same)
                 .init(device),
 
-            down1: DownBlockConfig::new(32, 64).init(device),
-            down2: DownBlockConfig::new(64, 128).init(device),
-            down3: DownBlockConfig::new(128, 256).init(device),
+            down1: DownBlockConfig::new(16, 32).init(device),
+            down2: DownBlockConfig::new(32, 64).init(device),
+            down3: DownBlockConfig::new(64, 128).init(device),
 
-            mid: MidBlockConfig::new(256).init(device),
+            mid: MidBlockConfig::new(128).init(device),
 
-            up3: UpBlockConfig::new(256, 128, 128).init(device),
-            up2: UpBlockConfig::new(128, 64, 64).init(device),
-            up1: UpBlockConfig::new(64, 32, 32).init(device),
+            up3: UpBlockConfig::new(128, 128, 64).init(device),
+            up2: UpBlockConfig::new(64, 64, 32).init(device),
+            up1: UpBlockConfig::new(32, 32, 16).init(device),
 
-            norm_out: GroupNormConfig::new(8, 32).init(device),
-            conv_out: Conv2dConfig::new([32, 1], [3, 3])
+            norm_out: GroupNormConfig::new(8, 16).init(device),
+            conv_out: Conv2dConfig::new([16, 1], [3, 3])
                 .with_padding(burn::nn::PaddingConfig2d::Same)
                 .init(device),
         }

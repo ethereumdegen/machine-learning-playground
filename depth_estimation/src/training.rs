@@ -11,7 +11,7 @@ use crate::data::{load_dataset, DepthBatcher, DepthItem};
 use crate::model::DepthUNetConfig;
 
 const NUM_EPOCHS: usize = 25;
-const BATCH_SIZE: usize = 8;
+const BATCH_SIZE: usize = 2;
 const LEARNING_RATE: f64 = 1e-4;
 const SEED: u64 = 42;
 
