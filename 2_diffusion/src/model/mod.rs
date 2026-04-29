@@ -65,12 +65,12 @@ impl UNetConfig {
 
             mid: MidBlockConfig::new(128, cond_dim).init(device),
 
-            // up3 input: 128 (from mid) + 128 (skip from down3) = 256
-            up3: UpBlockConfig::new(256, 64, cond_dim).init(device),
-            // up2 input: 64 (from up3 after crop) + 64 (skip from down2) = 128
-            up2: UpBlockConfig::new(128, 32, cond_dim).init(device),
-            // up1 input: 32 (from up2) + 32 (skip from down1) = 64
-            up1: UpBlockConfig::new(64, 32, cond_dim).init(device),
+            // up3: upsample 128ch, concat with skip3 (128ch), resblock -> 64
+            up3: UpBlockConfig::new(128, 128, 64, cond_dim).init(device),
+            // up2: upsample 64ch, concat with skip2 (64ch), resblock -> 32
+            up2: UpBlockConfig::new(64, 64, 32, cond_dim).init(device),
+            // up1: upsample 32ch, concat with skip1 (32ch), resblock -> 32
+            up1: UpBlockConfig::new(32, 32, 32, cond_dim).init(device),
 
             norm_out: GroupNormConfig::new(8, 32).init(device),
             conv_out: Conv2dConfig::new([32, 1], [3, 3])
@@ -110,8 +110,7 @@ impl<B: Backend> UNet<B> {
 
         // Decoder - need to handle spatial dimension mismatches
         // up3: ConvTranspose2d 3->6, but skip3 is 7x7, so we pad up3 output to 7
-        let h = self.up3.forward(h, skip3, cond.clone()); // ConvTranspose: 3->6, then we need 7
-        let h = pad_to_match::<B>(h, 7, 7);
+        let h = self.up3.forward(h, skip3, cond.clone());
 
         let h = self.up2.forward(h, skip2, cond.clone()); // ConvTranspose: 7->14
         let h = self.up1.forward(h, skip1, cond); // ConvTranspose: 14->28
@@ -121,19 +120,4 @@ impl<B: Backend> UNet<B> {
         let h = embeddings::silu(h);
         self.conv_out.forward(h)
     }
-}
-
-/// Pad tensor to target spatial dimensions using zero padding on the right/bottom.
-fn pad_to_match<B: Backend>(x: Tensor<B, 4>, target_h: usize, target_w: usize) -> Tensor<B, 4> {
-    let [b, c, h, w] = x.dims();
-    if h == target_h && w == target_w {
-        return x;
-    }
-    let device = x.device();
-    let padded = Tensor::<B, 4>::zeros([b, c, target_h, target_w], &device);
-    // Slice-assign: place x into top-left corner of padded
-    padded.slice_assign(
-        [0..b, 0..c, 0..h, 0..w],
-        x,
-    )
 }
