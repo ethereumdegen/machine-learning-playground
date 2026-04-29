@@ -11,7 +11,7 @@ Given a single RGB photo, the model outputs a dense depth map — a grayscale im
 The model is a **UNet** — an encoder-decoder with skip connections:
 
 ```
-RGB Image [B, 3, 128, 160]
+RGB Image [B, 3, 64, 80]
        |
     Conv 3→16
        |
@@ -33,7 +33,7 @@ RGB Image [B, 3, 128, 160]
        |
      ReLU (non-negative depth)
        |
-  Depth Map [B, 1, 128, 160]
+  Depth Map [B, 1, 64, 80]
 ```
 
 Each **DownBlock** contains a residual block (GroupNorm → SiLU → Conv3x3, twice, with a skip addition) followed by a stride-2 convolution that halves the spatial resolution. Each **UpBlock** uses a transposed convolution to upsample, concatenates the matching skip connection from the encoder, then applies a residual block to fuse the features. The **MidBlock** is two residual blocks at the bottleneck resolution.
@@ -43,11 +43,11 @@ Skip connections are crucial — they let the decoder recover fine spatial detai
 ### Training
 
 - **Dataset**: ~3,100 training / ~650 validation indoor scenes from NYU Depth V2, downloaded automatically from HuggingFace
-- **Resolution**: Images resized to 128x160 (from the original 640x480)
+- **Resolution**: Images resized to 64x80 (from the original 640x480)
 - **Loss**: Mean squared error between predicted and ground-truth depth
 - **Optimizer**: Adam (lr=1e-4, weight decay=1e-5)
 - **Epochs**: 25
-- **Batch size**: 2 (tuned for 6GB GPUs)
+- **Batch size**: 1 (tuned for 6GB GPUs)
 
 The dataset consists of indoor RGB-D scenes captured with a Kinect sensor. Depth maps are stored as TIFF float images in meters, with values typically ranging from 0 to ~10m.
 

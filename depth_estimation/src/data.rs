@@ -4,8 +4,8 @@ use burn::{
 };
 use std::io::Cursor;
 
-const HEIGHT: usize = 128;
-const WIDTH: usize = 160;
+const HEIGHT: usize = 64;
+const WIDTH: usize = 80;
 
 #[derive(Clone, Debug)]
 pub struct DepthItem {

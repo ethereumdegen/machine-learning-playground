@@ -58,8 +58,8 @@ impl DepthUNetConfig {
 
 impl<B: Backend> DepthUNet<B> {
     /// Forward pass.
-    /// - `x`: RGB image [B, 3, 128, 160]
-    /// Returns predicted depth [B, 1, 128, 160]
+    /// - `x`: RGB image [B, 3, 64, 80]
+    /// Returns predicted depth [B, 1, 64, 80]
     pub fn forward(&self, x: Tensor<B, 4>) -> Tensor<B, 4> {
         let h = self.conv_in.forward(x);
 

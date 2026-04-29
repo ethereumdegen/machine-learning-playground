@@ -6,8 +6,8 @@ use image::RgbImage;
 
 use crate::model::{DepthUNet, DepthUNetConfig};
 
-const HEIGHT: usize = 128;
-const WIDTH: usize = 160;
+const HEIGHT: usize = 64;
+const WIDTH: usize = 80;
 
 pub fn infer<B: Backend>(artifact_dir: &str, device: B::Device, image_path: &str) {
     let record = CompactRecorder::new()

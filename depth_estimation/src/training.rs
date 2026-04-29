@@ -11,7 +11,7 @@ use crate::data::{load_dataset, DepthBatcher, DepthItem};
 use crate::model::DepthUNetConfig;
 
 const NUM_EPOCHS: usize = 25;
-const BATCH_SIZE: usize = 2;
+const BATCH_SIZE: usize = 1;
 const LEARNING_RATE: f64 = 1e-4;
 const SEED: u64 = 42;
 
@@ -38,7 +38,7 @@ pub fn train<B: AutodiffBackend>(artifact_dir: &str, device: B::Device) {
     let dataloader_train = DataLoaderBuilder::new(batcher_train)
         .batch_size(BATCH_SIZE)
         .shuffle(SEED)
-        .num_workers(4)
+        .num_workers(1)
         .build(train_dataset);
 
     let dataloader_val = DataLoaderBuilder::new(batcher_val)
